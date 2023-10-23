@@ -14,96 +14,96 @@ using System.Text.RegularExpressions;
 
 namespace Selenium.WebDriver.UndetectedChromeDriver
 {
-    public class UndetectedChromeDriver : Sl.Selenium.Extensions.ChromeDriver
-    {
-        protected UndetectedChromeDriver(ChromeDriverParameters args)
-            : base(args)
-        {
+	public class UndetectedChromeDriver : Sl.Selenium.Extensions.ChromeDriver
+	{
+		protected UndetectedChromeDriver(ChromeDriverParameters args)
+			: base(args)
+		{
 
-        }
-
-
-        private readonly static string[] ProcessNames = { "chrome", "chromedriver", "undetected_chromedriver" };
-        public static new void KillAllChromeProcesses()
-        {
-            foreach (var name in ProcessNames)
-            {
-                foreach (var process in Process.GetProcessesByName(name))
-                {
-                    try
-                    {
-                        process.Kill();
-                    }
-                    catch
-                    {
-                        //ignore errors
-                    }
-                }
-            }
-
-            SlDriver.ClearDrivers(SlDriverBrowserType.Chrome);
-        }
-
-        public static new SlDriver Instance(bool Headless = false)
-        {
-            return Instance("sl_selenium_chrome", Headless);
-        }
-
-        public static new SlDriver Instance(String ProfileName, bool Headless = false)
-        {
-            return Instance(new HashSet<string>(), ProfileName, Headless);
-        }
-
-        public static new SlDriver Instance(ISet<string> DriverArguments, String ProfileName, bool Headless = false)
-        {
-            return Instance(DriverArguments, new HashSet<string>(), ProfileName, Headless);
-        }
-
-        public static new SlDriver Instance(ISet<string> DriverArguments, ISet<string> ExcludedArguments, String ProfileName, bool Headless = false)
-        {
-            var parameters = new ChromeDriverParameters()
-            {
-                DriverArguments = DriverArguments,
-                ExcludedArguments = ExcludedArguments,
-                Headless = Headless,
-                ProfileName = ProfileName
-            };
-
-            return Instance(parameters);
-        }
+		}
 
 
-        public static new SlDriver Instance(ChromeDriverParameters args)
-        {
-            if(args.DriverArguments == null)
-                args.DriverArguments = new HashSet<string>();
+		private readonly static string[] ProcessNames = { "chrome", "chromedriver", "undetected_chromedriver" };
+		public static new void KillAllChromeProcesses()
+		{
+			foreach (var name in ProcessNames)
+			{
+				foreach (var process in Process.GetProcessesByName(name))
+				{
+					try
+					{
+						process.Kill();
+					}
+					catch
+					{
+						//ignore errors
+					}
+				}
+			}
 
-            if(args.ExcludedArguments == null)
-                args.ExcludedArguments = new HashSet<string>();
+			SlDriver.ClearDrivers(SlDriverBrowserType.Chrome);
+		}
 
-            if (args.ProfileName == null)
-                args.ProfileName = "sl_selenium_chrome";
+		public static new SlDriver Instance(bool Headless = false)
+		{
+			return Instance("sl_selenium_chrome", Headless);
+		}
 
-            if (!_openDrivers.IsOpen(SlDriverBrowserType.Chrome, args.ProfileName))
-            {
-                UndetectedChromeDriver cDriver = new UndetectedChromeDriver(args);
+		public static new SlDriver Instance(String ProfileName, bool Headless = false)
+		{
+			return Instance(new HashSet<string>(), ProfileName, Headless);
+		}
 
-                _openDrivers.OpenDriver(cDriver);
-            }
-            return _openDrivers.GetDriver(SlDriverBrowserType.Chrome, args.ProfileName);
-        }
+		public static new SlDriver Instance(ISet<string> DriverArguments, String ProfileName, bool Headless = false)
+		{
+			return Instance(DriverArguments, new HashSet<string>(), ProfileName, Headless);
+		}
+
+		public static new SlDriver Instance(ISet<string> DriverArguments, ISet<string> ExcludedArguments, String ProfileName, bool Headless = false)
+		{
+			var parameters = new ChromeDriverParameters()
+			{
+				DriverArguments = DriverArguments,
+				ExcludedArguments = ExcludedArguments,
+				Headless = Headless,
+				ProfileName = ProfileName
+			};
+
+			return Instance(parameters);
+		}
 
 
-        public override void GoTo(string URL)
-        {
-            var webDriverResult = this.ExecuteScript("return navigator.webdriver");
+		public static new SlDriver Instance(ChromeDriverParameters args)
+		{
+			if (args.DriverArguments == null)
+				args.DriverArguments = new HashSet<string>();
 
-            if (webDriverResult != null)
-            {
-                BaseDriver.ExecuteCdpCommand("Page.addScriptToEvaluateOnNewDocument",
-                    new Dictionary<string, object>()
-                    {
-                        {"source", @"
+			if (args.ExcludedArguments == null)
+				args.ExcludedArguments = new HashSet<string>();
+
+			if (args.ProfileName == null)
+				args.ProfileName = "sl_selenium_chrome";
+
+			if (!_openDrivers.IsOpen(SlDriverBrowserType.Chrome, args.ProfileName))
+			{
+				UndetectedChromeDriver cDriver = new UndetectedChromeDriver(args);
+
+				_openDrivers.OpenDriver(cDriver);
+			}
+			return _openDrivers.GetDriver(SlDriverBrowserType.Chrome, args.ProfileName);
+		}
+
+
+		public override void GoTo(string URL)
+		{
+			var webDriverResult = this.ExecuteScript("return navigator.webdriver");
+
+			if (webDriverResult != null)
+			{
+				BaseDriver.ExecuteCdpCommand("Page.addScriptToEvaluateOnNewDocument",
+					new Dictionary<string, object>()
+					{
+						{"source", @"
                                 Object.defineProperty(window, 'navigator', {
                                        value: new Proxy(navigator, {
                                        has: (target, key) => (key === 'webdriver' ? false : key in target),
@@ -117,26 +117,26 @@ namespace Selenium.WebDriver.UndetectedChromeDriver
                                    });
 
                         " }
-                    });
+					});
 
-            }
+			}
 
-            var userAgentString = (string)this.ExecuteScript("return navigator.userAgent");
-
-
-            BaseDriver.ExecuteCdpCommand("Network.setUserAgentOverride",
-                new Dictionary<string, object>()
-                {
-                        {"userAgent", userAgentString.Replace("Headless","")}
-                }
-            );
+			var userAgentString = (string)this.ExecuteScript("return navigator.userAgent");
 
 
+			BaseDriver.ExecuteCdpCommand("Network.setUserAgentOverride",
+				new Dictionary<string, object>()
+				{
+						{"userAgent", userAgentString.Replace("Headless","")}
+				}
+			);
 
 
 
 
-            var scriptResult = this.ExecuteScript(@"
+
+
+			var scriptResult = this.ExecuteScript(@"
                let objectToInspect = window,
                         result = [];
                     while(objectToInspect !== null)
@@ -145,13 +145,13 @@ namespace Selenium.WebDriver.UndetectedChromeDriver
                     return result.filter(i => i.match(/.+_.+_(Array|Promise|Symbol)/ig))
             ");
 
-            if (scriptResult != null && ((ReadOnlyCollection<object>)scriptResult).Count > 0)
-            {
-                BaseDriver.ExecuteCdpCommand("Page.addScriptToEvaluateOnNewDocument",
+			if (scriptResult != null && ((ReadOnlyCollection<object>)scriptResult).Count > 0)
+			{
+				BaseDriver.ExecuteCdpCommand("Page.addScriptToEvaluateOnNewDocument",
 
-                    new Dictionary<string, object>()
-                    {
-                        {"source", @" 
+					new Dictionary<string, object>()
+					{
+						{"source", @" 
                         let objectToInspect = window,
                         result = [];
                             while(objectToInspect !== null) 
@@ -160,164 +160,170 @@ namespace Selenium.WebDriver.UndetectedChromeDriver
                             result.forEach(p => p.match(/.+_.+_(Array|Promise|Symbol)/ig)
                                                 &&delete window[p]&&console.log('removed',p))
                     " }
-                    }
+					}
 
-                    );
+					);
 
-            }
+			}
 
-            base.GoTo(URL);
-        }
+			base.GoTo(URL);
+		}
 
-        public override string DriverName()
-        {
-            return "undetected_" + base.DriverName();
-        }
+		public override string DriverName()
+		{
+			return "undetected_" + base.DriverName();
+		}
 
-        public static SlDriver Instance(string ProfileName, ChromeOptions ChromeOptions)
-        {
-            var driver = (UndetectedChromeDriver)Instance(ProfileName);
-            driver.ChromeOptions = ChromeOptions;
-            return driver;
-        }
-
-
-        public static SlDriver Instance(string ProfileName, ChromeOptions ChromeOptions, TimeSpan Timeout)
-        {
-            ChromeDriverParameters cdp = new ChromeDriverParameters() { 
-                ProfileName = ProfileName,
-                Timeout = Timeout 
-            };
-            var driver = (UndetectedChromeDriver)Instance(cdp);
-            driver.ChromeOptions = ChromeOptions;
-            return driver;
-        }
+		public static SlDriver Instance(string ProfileName, ChromeOptions ChromeOptions)
+		{
+			var driver = (UndetectedChromeDriver)Instance(ProfileName);
+			driver.ChromeOptions = ChromeOptions;
+			return driver;
+		}
 
 
-        public ChromeOptions ChromeOptions { get; private set; }
+		public static SlDriver Instance(string ProfileName, ChromeOptions ChromeOptions, TimeSpan Timeout)
+		{
+			ChromeDriverParameters cdp = new ChromeDriverParameters()
+			{
+				ProfileName = ProfileName,
+				Timeout = Timeout
+			};
+			var driver = (UndetectedChromeDriver)Instance(cdp);
 
-        protected override OpenQA.Selenium.Chrome.ChromeDriver CreateBaseDriver()
-        {
-            var service = OpenQA.Selenium.Chrome.ChromeDriverService.CreateDefaultService(DriversFolderPath(), DriverName());
+			driver.DownloadLatestDriver();
 
-            service.HostName = "127.0.0.1";
-
-            service.SuppressInitialDiagnosticInformation = true;
-
-            DriverArguments.Add("start-maximized");
-            DriverArguments.Add("--disable-blink-features");
-            DriverArguments.Add("--disable-blink-features=AutomationControlled");
-            DriverArguments.Add("disable-infobars");
-
-            if (this.Headless)
-            {
-                DriverArguments.Add("headless");
-            }
-            else
-            {
-                DriverArguments.Remove("headless");
-            }
-
-            DriverArguments.Add("--no-default-browser-check");
-            DriverArguments.Add("--no-first-run");
+			driver.ChromeOptions = ChromeOptions;
+			return driver;
+		}
 
 
-            HashSet<string> argumentKeys = new HashSet<string>(DriverArguments.Select(f => f.Split('=')[0]));
+		public ChromeOptions ChromeOptions { get; private set; }
 
-            if (!argumentKeys.Contains("--log-level"))
-            {
-                DriverArguments.Add("--log-level=0");
-            }
+		protected override OpenQA.Selenium.Chrome.ChromeDriver CreateBaseDriver()
+		{
+			DownloadLatestDriver();
 
-            if(ChromeOptions == null)
-            {
-                ChromeOptions = new ChromeOptions();
-            }
-            
-            foreach (var arg in DriverArguments)
-            {
-                ChromeOptions.AddArgument(arg);
-            }
+			var service = OpenQA.Selenium.Chrome.ChromeDriverService.CreateDefaultService(DriversFolderPath(), DriverName());
 
+			service.HostName = "127.0.0.1";
 
+			service.SuppressInitialDiagnosticInformation = true;
 
-            ChromeOptions.AddExcludedArgument("enable-automation");
-            ChromeOptions.AddAdditionalChromeOption("useAutomationExtension", false);
+			DriverArguments.Add("start-maximized");
+			DriverArguments.Add("--disable-blink-features");
+			DriverArguments.Add("--disable-blink-features=AutomationControlled");
+			DriverArguments.Add("disable-infobars");
 
-            foreach (var excluded in ChromeDriverParameters.ExcludedArguments)
-            {
-                ChromeOptions.AddExcludedArgument(excluded);
-            }
+			if (this.Headless)
+			{
+				DriverArguments.Add("headless");
+			}
+			else
+			{
+				DriverArguments.Remove("headless");
+			}
 
-            AddProfileArgumentToBaseDriver(ChromeOptions);
-
-            if (ChromeDriverParameters.Timeout != default)
-            {
-                return new OpenQA.Selenium.Chrome.ChromeDriver(service, ChromeOptions, ChromeDriverParameters.Timeout);
-            }
-            else
-            {
-                return new OpenQA.Selenium.Chrome.ChromeDriver(service, ChromeOptions);
-            }
-        }
-
-        public static bool ENABLE_PATCHER = true;
-        protected override void DownloadLatestDriver()
-        {
-            base.DownloadLatestDriver();
-
-            #region patcher
-            if (ENABLE_PATCHER)
-            {
-                PatchDriver();  
-            }
-            #endregion
-        }
-
-        private void PatchDriver()
-        {
-            string newCdc = randomCdc(26);
-            using (FileStream stream = new FileStream(this.DriverPath(), FileMode.Open, FileAccess.ReadWrite))
-            {
-                var buffer = new byte[1];
-                var str = new StringBuilder("....");
-
-                var read = 0;
-                while (true)
-                {
-                    read = stream.Read(buffer, 0, buffer.Length);
-                    if (read == 0)
-                        break;
-
-                    str.Remove(0, 1);
-                    str.Append((char)buffer[0]);
-
-                    if (str.ToString() == "cdc_")
-                    {
-                        stream.Seek(-4, SeekOrigin.Current);
-                        var bytes = Encoding.GetEncoding("ISO-8859-1").GetBytes(newCdc);
-                        stream.Write(bytes, 0, bytes.Length);
-                    }
-                }
-            }
-        }
-
-        private static string randomCdc(int size)
-        {
-            Random random = new Random((int)DateTime.Now.Ticks);
-
-            const string chars = "abcdefghijklmnopqrstuvwxyz";
+			DriverArguments.Add("--no-default-browser-check");
+			DriverArguments.Add("--no-first-run");
 
 
-            char[] buffer = new char[size];
-            for (int i = 0; i < size; i++)
-            {
-                buffer[i] = chars[random.Next(chars.Length)];
-            }
+			HashSet<string> argumentKeys = new HashSet<string>(DriverArguments.Select(f => f.Split('=')[0]));
 
-            buffer[2] = buffer[0];
-            buffer[3] = '_';
-            return new string(buffer);
-        }
-    }
+			if (!argumentKeys.Contains("--log-level"))
+			{
+				DriverArguments.Add("--log-level=0");
+			}
+
+			if (ChromeOptions == null)
+			{
+				ChromeOptions = new ChromeOptions();
+			}
+
+			foreach (var arg in DriverArguments)
+			{
+				ChromeOptions.AddArgument(arg);
+			}
+
+
+
+			ChromeOptions.AddExcludedArgument("enable-automation");
+			ChromeOptions.AddAdditionalChromeOption("useAutomationExtension", false);
+
+			foreach (var excluded in ChromeDriverParameters.ExcludedArguments)
+			{
+				ChromeOptions.AddExcludedArgument(excluded);
+			}
+
+			AddProfileArgumentToBaseDriver(ChromeOptions);
+
+			if (ChromeDriverParameters.Timeout != default)
+			{
+				return new OpenQA.Selenium.Chrome.ChromeDriver(service, ChromeOptions, ChromeDriverParameters.Timeout);
+			}
+			else
+			{
+				return new OpenQA.Selenium.Chrome.ChromeDriver(service, ChromeOptions);
+			}
+		}
+
+		public static bool ENABLE_PATCHER = true;
+		protected override void DownloadLatestDriver()
+		{
+			base.DownloadLatestDriver();
+
+			#region patcher
+			if (ENABLE_PATCHER)
+			{
+				PatchDriver();
+			}
+			#endregion
+		}
+
+		private void PatchDriver()
+		{
+			string newCdc = randomCdc(26);
+			using (FileStream stream = new FileStream(this.DriverPath(), FileMode.Open, FileAccess.ReadWrite))
+			{
+				var buffer = new byte[1];
+				var str = new StringBuilder("....");
+
+				var read = 0;
+				while (true)
+				{
+					read = stream.Read(buffer, 0, buffer.Length);
+					if (read == 0)
+						break;
+
+					str.Remove(0, 1);
+					str.Append((char)buffer[0]);
+
+					if (str.ToString() == "cdc_")
+					{
+						stream.Seek(-4, SeekOrigin.Current);
+						var bytes = Encoding.GetEncoding("ISO-8859-1").GetBytes(newCdc);
+						stream.Write(bytes, 0, bytes.Length);
+					}
+				}
+			}
+		}
+
+		private static string randomCdc(int size)
+		{
+			Random random = new Random((int)DateTime.Now.Ticks);
+
+			const string chars = "abcdefghijklmnopqrstuvwxyz";
+
+
+			char[] buffer = new char[size];
+			for (int i = 0; i < size; i++)
+			{
+				buffer[i] = chars[random.Next(chars.Length)];
+			}
+
+			buffer[2] = buffer[0];
+			buffer[3] = '_';
+			return new string(buffer);
+		}
+	}
 }

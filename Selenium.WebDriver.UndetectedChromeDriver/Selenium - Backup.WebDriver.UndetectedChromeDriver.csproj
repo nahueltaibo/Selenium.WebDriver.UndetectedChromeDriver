@@ -11,7 +11,7 @@ Uses Sl.Selenium.Extensions, Automatically downloads latest ChromeDriver</Descri
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/emre-gon/Selenium.WebDriver.UndetectedChromeDriver</RepositoryUrl>
     <PackageTags>selenium;automation;chrome</PackageTags>
-    <Version>2.3.3</Version>
+    <Version>2.3.2</Version>
     <AssemblyName>NT.Selenium.WebDriver.UndetectedChromeDriver</AssemblyName>
   </PropertyGroup>
 
@@ -23,7 +23,7 @@ Uses Sl.Selenium.Extensions, Automatically downloads latest ChromeDriver</Descri
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="NT.Selenium.Extensions.Chrome" Version="2.4.4" />
+    <PackageReference Include="NT.Selenium.Extensions.Chrome" Version="2.4.2" />
   </ItemGroup>
 
 </Project>
